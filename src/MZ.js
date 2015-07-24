@@ -16,7 +16,7 @@ if (typeof Array.prototype.indexOf !== 'function') {
  * @version 0.0.1
  * @return {[type]} [description]
  */
-window.MZ = (function(w,d) {
+window.MZ = (function(w, d) {
 
     /**
      * 对dom元素封装
@@ -55,6 +55,16 @@ window.MZ = (function(w,d) {
         return m.length > 1 ? m : m[0];
     }
 
+    //  TODO dom元素定位
+    Dom.prototype.offset = function(){
+
+    }
+
+    // TODO 判断元素是否在可视区域内
+    Dom.prototype.isInViewport = function(){
+
+    }
+
     // ============ DOM MANIPULATION
     Dom.prototype.text = function(text) {
         if (typeof text !== 'undefined') {
@@ -81,29 +91,17 @@ window.MZ = (function(w,d) {
     }
 
     Dom.prototype.addClass = function(classes) {
-        var className = '';
-        if (typeof classes !== 'string') {
-            for (var i = 0, len = classes.length; i < len; i++) {
-                className += ' ' + classes[i];
-            }
-        } else {
-            className = ' ' + classes;
-        }
-
         return this.forEach(function(el) {
-            el.className += className;
+            el.classList.add(classes);
         });
     }
 
     Dom.prototype.removeClass = function(clazz) {
         return this.forEach(function(el) {
-            var cs = el.className.split(' '),
-                i;
-            while ((i = cs.indexOf(clazz)) > -1) {
-                // slice，截取数组
-                cs = cs.slice(0, i).concat(cs.slice(++i));
+            var cs = el.className.split(' ');
+            for (var i = 0, len = cs.length; i < len; i++) {
+                el.classList.remove(cs[i]);
             }
-            el.className = cs.join(' ');
         });
     }
 
@@ -234,4 +232,4 @@ window.MZ = (function(w,d) {
         }
     }
     return MZ;
-})(window,document);
+})(window, document);
