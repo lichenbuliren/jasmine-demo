@@ -1,4 +1,4 @@
-describe('MZ library test',function(){
+describe('MZ library',function(){
     describe('test $ function',function(){
         it('can get elements by id',function(){
             var el = document.getElementById('one');
@@ -104,4 +104,79 @@ describe('MZ library test',function(){
         });
     });
 
+
+    describe('test MZ Dom removeClass',function(){
+        beforeEach(function(){
+            this.d = MZ.$('.two');
+            this.d.addClass('classes');
+        });
+
+        afterEach(function(){
+            this.d.forEach(function(el){
+                el.className = 'two';
+            });
+        });
+
+        it('can remove a class from elements',function(){
+            this.d.removeClass('classes');
+            expect(this.d[0].className.indexOf('classes')).toBe(-1);
+        });
+
+        it('can removes all instances of that class from elements',function(){
+            this.d.addClass('test classes');
+            this.d.removeClass('classes');
+            this.d.removeClass('test');
+            expect(this.d[0].className.indexOf('test')).toBe(-1);
+            expect(this.d[0].className.indexOf('classes')).toBe(-1);
+        });
+    });
+
+    describe('test MZ Dom attr',function(){
+        beforeEach(function(){
+            this.d = MZ.$('.two');
+        });
+
+        afterEach(function(){
+            this.d.forEach(function(el){
+                el.removeAttribute('data-id');
+            });
+        });
+
+        it('can set element attributes',function(){
+            this.d.attr('data-id','110');
+            expect(this.d[0].getAttribute('data-id')).toEqual('110');
+        });
+
+        it('can get element attributes',function(){
+            this.d.attr('data-id','110');
+            expect(this.d.attr('data-id')[0]).toEqual('110');
+        });
+    });
+
+    describe('test MZ create',function(){
+        it('can create elements',function(){
+            expect(MZ.create('p')[0].tagName.toUpperCase()).toEqual('P');
+        });
+
+        it('can create elements by attrs',function(){
+            var p = MZ.create('p',{
+                'className': 'test',
+                'text': 'hello world'
+            });
+
+            expect(p[0].className.indexOf('test')).toBeGreaterThan(-1);
+            expect(p[0].innerText).toEqual('hello world');
+        });
+    });
+
+    describe('test MZ Dom append',function(){
+        beforeEach(function(){
+            this.d = MZ.$('#element');
+        });
+
+        // it('can append elements to parentEl',function(){
+        //     this.d = MZ.$('#element');
+        //     this.d.append()
+        // });
+    });
 });
