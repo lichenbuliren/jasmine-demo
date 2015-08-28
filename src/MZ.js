@@ -18,6 +18,19 @@ if (typeof Array.prototype.indexOf !== 'function') {
  */
 window.MZ = (function(w, d) {
 
+    // 对象缓存
+    var classCache = {},
+        classList;
+
+    /**
+     * 构建正则对象
+     * @param  {[type]} name [description]
+     * @return {[type]}      [description]
+     */
+    function classRE(name) {
+        return name in classCache ?
+          classCache[name] : (classCache[name] = new RegExp('(^|\\s)' + name + '(\\s|$)'));
+    }
     /**
      * 对dom元素封装
      * @param {[type]} els [description]
@@ -55,14 +68,32 @@ window.MZ = (function(w, d) {
         return m.length > 1 ? m : m[0];
     }
 
-    //  TODO dom元素定位
+    /**
+     * 获取元素在document中的位置
+     * @return {[type]} [description]
+     */
     Dom.prototype.offset = function(){
-
+        var obj = this[0].getBoundingClientRect();
+        return {
+            left: obj.left + w.pageXOffset,
+            top: obj.top + window.pageYOffset,
+            width: Math.round(obj.width),
+            height: Math.round(obj.height)
+        }
     }
 
     // TODO 判断元素是否在可视区域内
     Dom.prototype.isInViewport = function(){
 
+    }
+
+    function offsetParent() {
+      return this.map(function(){
+        var parent = this.offsetParent || document.body
+        while (parent && !rootNodeRE.test(parent.nodeName) && $(parent).css("position") == "static")
+          parent = parent.offsetParent
+        return parent
+      })
     }
 
     // ============ DOM MANIPULATION
@@ -90,18 +121,44 @@ window.MZ = (function(w, d) {
         }
     }
 
-    Dom.prototype.addClass = function(classes) {
-        return this.forEach(function(el) {
-            el.classList.add(classes);
+    Dom.prototype.hasClass = function(cls){
+        if(!cls) return false;
+        return [].some.call(this,function(el){
+            return this.test(el.className);
+        }, classRE(cls));
+    }
+
+    /**
+     * 添加class类，支持多个类名，以空格分隔
+     * @param {[type]} name [description]
+     */
+    Dom.prototype.addClass = function(name) {
+        if(!name) return this;
+        return this.forEach(function(el,i) {
+            classList = [];
+            var cls = el.className,
+                clazz = name.split(' ');
+            clazz.forEach(function(cls){
+                if(!el.classList.contains(cls)){
+                    el.classList.add(cls);
+                }
+            });
         });
     }
 
     Dom.prototype.removeClass = function(clazz) {
+        if(!clazz) return this;
         return this.forEach(function(el) {
-            var cs = el.className.split(' ');
-            for (var i = 0, len = cs.length; i < len; i++) {
-                el.classList.remove(cs[i]);
-            }
+            var cs = clazz.split(' ');
+            cs && cs.forEach(function(cls){
+                el.classList.remove(cls);
+            });
+        });
+    }
+
+    Dom.prototype.toggle = function(name){
+        return this.forEach(function(el){
+            el.classList.toggle(name);
         });
     }
 
@@ -117,6 +174,12 @@ window.MZ = (function(w, d) {
         }
     }
 
+    /**
+     * 添加子节点,内部插入
+     * 添加到当前父节点的子节点最后
+     * @param  {[type]} els [description]
+     * @return {[type]}     [description]
+     */
     Dom.prototype.append = function(els) {
         // 当前dom对象
         this.forEach(function(parEl, i) {
@@ -131,6 +194,12 @@ window.MZ = (function(w, d) {
         });
     }
 
+    /**
+     * 添加子节点，内部插入
+     * 添加到当前父节点的第一个子节点前面
+     * @param  {[type]} els [description]
+     * @return {[type]}     [description]
+     */
     Dom.prototype.prepend = function(els) {
         // 当前dom对象
         this.forEach(function(parEl, i) {
@@ -153,26 +222,18 @@ window.MZ = (function(w, d) {
     }
 
     Dom.prototype.on = (function() {
-        if (d.addEventListener) {
-            return function(evt, fn) {
-                return this.forEach(function(el) {
-                    el.addEventListener(evt, fn, false);
-                });
-            };
-        } else if (d.attachEvent) {
-            return function(evt, fn) {
-                return this.forEach(function(el) {
-                    el.attachEvent('on' + evt, fn);
-                });
-            };
-        } else {
-            return function(evt, fn) {
-                return this.forEach(function(el) {
+        return function(evt,fn){
+            return this.forEach(function(ef){
+                if(d.addEventListener){
+                    el.addEventListener(evt,fn,false);
+                }else if(d.attachEvent){
+                    el.attachEvent('on' + evt,fn);
+                }else{
                     el['on' + evt] = fn;
-                });
-            }
+                }
+            });
         }
-    }());
+    })();
 
     Dom.prototype.off = (function() {
         if (d.addEventListener) {
@@ -229,6 +290,18 @@ window.MZ = (function(w, d) {
                 }
             }
             return el;
+        },
+
+        addLoadEvent: function(func){
+            var loaded = w.onload;
+            if(typeof loaded != 'function'){
+                w.onload = func;
+            }else{
+                window.onload = function(){
+                    loaded();
+                    func();
+                }
+            }
         }
     }
     return MZ;

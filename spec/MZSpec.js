@@ -97,8 +97,8 @@ describe('MZ library',function(){
             expect(this.d[0].className.indexOf('single')).toBeGreaterThan(-1);
         });
 
-        it('can add multiple classed (via array) to elements',function(){
-            this.d.addClass(['multiple','classes']);
+        it('can add multiple classed (split with space) to elements',function(){
+            this.d.addClass('multiple classes');
             var cn = this.d[0].className;
             expect(cn.indexOf('multiple')).toBeLessThan(cn.indexOf('classes'));
         });
@@ -124,10 +124,31 @@ describe('MZ library',function(){
 
         it('can removes all instances of that class from elements',function(){
             this.d.addClass('test classes');
+            // console.log(this.d[0].className);
             this.d.removeClass('classes');
             this.d.removeClass('test');
+            // console.log('hello:' + this.d[0].className);
             expect(this.d[0].className.indexOf('test')).toBe(-1);
             expect(this.d[0].className.indexOf('classes')).toBe(-1);
+        });
+    });
+
+    describe('test MZ Dom toggle',function(){
+        beforeEach(function(){
+            this.d = MZ.$('.two');
+        });
+
+        afterEach(function(){
+            this.d.forEach(function(el){
+                el.className = 'two';
+            });
+        });
+
+        it('can toggle class',function(){
+            this.d.toggle('test2');
+            expect(this.d[0].classList.contains('test2')).toEqual(true);
+            this.d.toggle('test2');
+            expect(this.d[0].classList.contains('test2')).toEqual(false);
         });
     });
 
